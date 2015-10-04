@@ -1,174 +1,180 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DoubleVSFloatBenchmark
+﻿namespace DoubleVSFloatBenchmark
 {
-    class Benchmark
+    internal class Benchmark
     {
-        private const float ZERO_F = 0f;
-        private const float ONE_F = 1f;
+        private const float ZeroF = 0f;
+        private const float OneF = 1f;
 
-        private const double ZERO_D = .0;
-        private const double ONE_D = 1.0;
+        private const double ZeroD = .0;
+        private const double OneD = 1.0;
 
-        private int _times;
-        private Dictionary<string, long> _scoreF = CreateScoreDict();
-        private Dictionary<string, long> _scoreD = CreateScoreDict();
-
-        public IReadOnlyDictionary<string, long> ScoreF
-        {
-            get { return _scoreF; }
-        }
-        public IReadOnlyDictionary<string, long> ScoreD
-        {
-            get { return _scoreD; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="times">Must be multiple of 10</param>
+        private static int _iteration;
+        
         public Benchmark(int times)
         {
-            _times = times / 10;
+            _iteration = times;
         }
 
         public void Excute()
         {
-            Run(.1234f, 1.234f);
-            Run(.1234, 1.234);
-            Console.WriteLine($"{"", -5}{"float", 10}{"double", 10}");
-            foreach(var item in _scoreF)
-            {
-                var p = _scoreF[item.Key] / (double)_scoreD[item.Key] - 1.0;
-                Console.WriteLine($"{item.Key, -5}{_scoreF[item.Key], 10}{_scoreD[item.Key], 10}{p, 10:P}");
-            }
+            // 预热
+            FloatAdd();
+            FloatSub();
+            FloatMul();
+            FloatDiv();
+            
+            DoubleAdd();
+            DoubleSub();
+            DoubleMul();
+            DoubleDiv();
+
+            // 开始测试
+            CodeTimer.Initialize();
+
+            CodeTimer.Time("Float Add", _iteration, FloatAdd);
+            CodeTimer.Time("Double Add", _iteration, DoubleAdd);
+
+            CodeTimer.Time("Float Sub", _iteration, FloatSub);
+            CodeTimer.Time("Double Sub", _iteration, DoubleSub);
+
+            CodeTimer.Time("Float Mul", _iteration, FloatMul);
+            CodeTimer.Time("Double Mul", _iteration, DoubleMul);
+
+            CodeTimer.Time("Float Div", _iteration, FloatDiv);
+            CodeTimer.Time("Double Div", _iteration, DoubleDiv);
         }
 
-        private void Run(float x, float y)
+        #region 测试对象
+
+        private static void FloatAdd()
         {
-            // Test Add
-            var tmp = ZERO_F;
-            _scoreF["Add"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                }
-            }).Ticks;
-            // Test Subtract
-            tmp = ZERO_F;
-            _scoreF["Sub"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                }
-            }).Ticks;
-            // Test Multply
-            tmp = ONE_F;
-            _scoreF["Mul"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                }
-            }).Ticks;
-            // Test Divide
-            tmp = ONE_F;
-            _scoreF["Div"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                }
-            }).Ticks;
+            float x = 0.1234f, y = 4.321f;
+            var tmp = ZeroF;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
         }
 
-        private void Run(double x, double y)
+
+        private static void DoubleAdd()
         {
-            // Test Add
-            var tmp = ZERO_D;
-            _scoreD["Add"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                    tmp += x; tmp += y;
-                }
-            }).Ticks;
-            // Test Subtract
-            tmp = ZERO_D;
-            _scoreD["Sub"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                    tmp -= x; tmp -= y;
-                }
-            }).Ticks;
-            // Test Multply
-            tmp = ONE_D;
-            _scoreD["Mul"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                    tmp *= x; tmp *= y;
-                }
-            }).Ticks;
-            // Test Divide
-            tmp = ONE_D;
-            _scoreD["Div"] = Timer.Run(() =>
-            {
-                for (int i = 0; i < _times; i++)
-                {
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                    tmp /= x; tmp /= y;
-                }
-            }).Ticks;
+            double x = 0.1234, y = 4.321;
+            var tmp = ZeroD;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
+            tmp += x;
+            tmp += y;
         }
 
-        private static Dictionary<string, long> CreateScoreDict()
+        private static void FloatSub()
         {
-            return new Dictionary<string, long>
-            {
-                ["Add"] = 0,
-                ["Sub"] = 0,
-                ["Mul"] = 0,
-                ["Div"] = 0
-            };
+            float x = 0.1234f, y = 4.321f;
+            var tmp = ZeroF;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
         }
+
+        private static void DoubleSub()
+        {
+            double x = 0.1234, y = 4.321;
+            var tmp = ZeroD;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
+            tmp -= x;
+            tmp -= y;
+        }
+
+        private static void FloatMul()
+        {
+            float x = 0.1234f, y = 4.321f;
+            var tmp = OneF;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+        }
+
+        private static void DoubleMul()
+        {
+            double x = 0.1234, y = 4.321;
+            var tmp = OneD;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+            tmp *= x;
+            tmp *= y;
+        }
+
+        private static void FloatDiv()
+        {
+            float x = 0.1234f, y = 4.321f;
+            var tmp = OneF;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+        }
+
+        private static void DoubleDiv()
+        {
+            double x = 0.1234, y = 4.321;
+            var tmp = OneD;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+            tmp /= x;
+            tmp /= y;
+        }
+
+        #endregion
     }
 }

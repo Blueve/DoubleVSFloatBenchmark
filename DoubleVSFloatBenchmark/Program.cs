@@ -10,7 +10,8 @@ namespace DoubleVSFloatBenchmark
     {
         static void Main(string[] args)
         {
-            new Benchmark(10000000).Excute();
+            new Benchmark(100 * 100 * 100 * 100).Excute();
+            Console.ReadKey();
         }
     }
 }
