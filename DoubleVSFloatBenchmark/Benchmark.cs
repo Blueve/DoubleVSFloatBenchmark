@@ -1,4 +1,6 @@
-﻿namespace DoubleVSFloatBenchmark
+﻿using System;
+
+namespace DoubleVSFloatBenchmark
 {
     internal class Benchmark
     {
@@ -17,18 +19,20 @@
 
         public void Excute()
         {
-            // 预热
+            // Warm up
             FloatAdd();
             FloatSub();
             FloatMul();
             FloatDiv();
-            
+            FloatMix();
+
             DoubleAdd();
             DoubleSub();
             DoubleMul();
             DoubleDiv();
+            DoubleMix();
 
-            // 开始测试
+            // Start
             CodeTimer.Initialize();
 
             CodeTimer.Time("Float Add", _iteration, FloatAdd);
@@ -42,9 +46,31 @@
 
             CodeTimer.Time("Float Div", _iteration, FloatDiv);
             CodeTimer.Time("Double Div", _iteration, DoubleDiv);
+
+            CodeTimer.Time("Float Mix", _iteration, FloatMix);
+            CodeTimer.Time("Double Mix", _iteration, DoubleMix);
         }
 
-        #region 测试对象
+        #region Test cases
+
+        private static void FloatMix()
+        {
+            float x = 0.1234f, y = 4.321f;
+            float a, b, c;
+            a = x + y + x + y + x + y - x - y - x - y - x - y - x - y;
+            b = x * x * x * x * x + y * y * y * y * y;
+            c = x / y / x / y / x / y / x / y - y / x / y / x / y / x / y / x;
+        }
+
+        private static void DoubleMix()
+        {
+            double x = 0.1234f, y = 4.321f;
+            double a, b, c;
+            a = x + y + x + y + x + y - x - y - x - y - x - y - x - y;
+            b = x * x * x * x * x + y * y * y * y * y;
+            c = x / y / x / y / x / y / x / y - y / x / y / x / y / x / y / x;
+        }
+
 
         private static void FloatAdd()
         {
